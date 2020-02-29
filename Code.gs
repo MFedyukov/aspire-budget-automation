@@ -25,7 +25,7 @@ var accountTransfer = "↕️ Account Transfer";
 var notificationEmail = "my~email@gmail.com";
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- * Spreadsheet extra menu functionality
+ * Spreadsheet extra menu functionality [original Aspire Budget 2.8 code]
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 function onOpen() {
