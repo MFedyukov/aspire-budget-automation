@@ -59,7 +59,7 @@ And because banks and payment systems change the format of their transaction mes
 5. Open your Aspire Budget Google Sheet
 6. On Transactions tab add one extra column and name it Comment (this one is quite useful as with automation Memo column is used for bank message, and Comment is to be used for your personal comments)
 7. Then add one more extra column and name it Keywords, then you can hide it: right-click > Hide column (this column is used for keywords extraction from transaction messages to provide categorization functionality)
-8. Add 2 extra tabs to your Aspire Budget Google Sheet from here: [Aspire Budget Automation Extra Tabs](https://docs.google.com/spreadsheets/u/0/d/10xXkLL8sYij-o2rVeekcN-7nbK_bt8ZAimB_DmL1YSc/view)
+8. Add 2 extra tabs to your Aspire Budget Google Sheet from here: [Aspire Budget Automation Extra Tabs](https://docs.google.com/spreadsheets/d/1eoOGVff2VydL62S197weVrPZrSbDpNb0xqAvlVaM_WQ/view)
    - *Log* tab is needed to collect all of the incoming messages, so in case of getting some rare type of transaction message, or in case of message format change you would have full log of the messages saved
    - *Keywords & Categories* tab is needed for collecting your statistics of categories for every keyword
 9. As soon as you have received a number of messages of different transactions (different types of inflow and outflow ones) check [Code.gs](Code.gs) and see what code to use as a basis for your bank / payment system messages parsing
