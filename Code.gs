@@ -1674,33 +1674,33 @@ function categorize(keyword) {
     return "";
   }
   var catSheet = SpreadsheetApp.getActive().getSheetByName("Keywords & Categories");
-  var firstColumn = 1;
-  var lastColumn = Math.max(catSheet.getLastColumn(), 1);
-  var numColumns = lastColumn - firstColumn + 1;
+  var firstRow = 2;
+  var lastRow = Math.max(catSheet.getLastRow(), 1);
+  var numRows = lastRow - firstRow + 1;
   
   keyword = keyword.toLowerCase();
   
-  var data = catSheet.getRange(1, firstColumn, 2, lastColumn).getValues(); // create an array of data from rows 1 and 2
+  var data = catSheet.getRange(firstRow, 1, lastRow, 2).getValues(); // create an array of data from columns A and B
 
   // Try to find exact match first
-  for (var nn = 0; nn < numColumns; ++nn) {
-    if (data[0][nn] == keyword) { // if a match in row 1 is found, break the loop
+  for (var nn = 0; nn < numRows; ++nn) {
+    if (data[nn][0] == keyword) { // if a match in column A is found, break the loop
       break;
     };
   }
-  var mostPopularCategory = data[1][nn];
-  if ((nn < numColumns) && (mostPopularCategory != "")) {
+  var mostPopularCategory = data[nn][1];
+  if ((nn < numRows) && (mostPopularCategory != "")) {
     return mostPopularCategory;
   };
   
-  // If exact match was not found. try to find a partial match
-  for (var nn = 0; nn < numColumns; ++nn) {
-    if ((data[0][nn].indexOf(keyword) != -1) || (keyword.indexOf(data[0][nn]) != -1)) {
+  // If exact match was not found, try to find a partial match
+  for (var nn = 0; nn < numRows; ++nn) {
+    if ((data[nn][0].indexOf(keyword) != -1) || (keyword.indexOf(data[nn][0]) != -1)) {
       break;
     };
   }
-  var mostPopularCategory = data[1][nn];
-  if ((nn < numColumns) && (mostPopularCategory != "")) {
+  var mostPopularCategory = data[nn][1];
+  if ((nn < numRows) && (mostPopularCategory != "")) {
     return mostPopularCategory;
   };
   
