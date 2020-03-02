@@ -51,8 +51,9 @@ And because banks and payment systems change the format of their transaction mes
 
 1. Check what notification capabilities have your bank / payment system
 2. Test them and choose what you’ll use
-   - so, for example, [PayPal IPN](https://developer.paypal.com/docs/ipn/) is a great PayPal feature, but it notifies only about inflow transactions, and PayPal e-mails notify about every transaction;
+   - so, for example, [PayPal IPN](https://developer.paypal.com/docs/ipn/) is a great feature, but it notifies only about inflow transactions, though PayPal e-mails notify about every transaction;
    - many banks send full transaction info in e-mails, but only brief transaction info in SMS or push notifications;
+   - some banks can send push notifications, but in the moments when you spend money but your device is offline they send SMS instead;
    - to the moment (2020-02-29) you can forward SMS and push notifications on Android devices, but not in iOS
 3. If you choose to use e-mail notifications, set up their forwarding to your Gmail account, the same as you work with Aspire Budget Google Sheet in
 4. If you choose to use SMS notifications, set up their forwarding to your Gmail account as well, with [SMS Backup+](https://play.google.com/store/apps/details?id=com.zegoggles.smssync), for example
