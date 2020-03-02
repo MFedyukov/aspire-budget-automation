@@ -43,7 +43,7 @@ Moreover, all of the new transactions are automatically categorized based on cat
 
 Use of these scripts implies that you have basic knowledge of programming.
 
-That’s because you are likely a customer of a bank or payment system which is not yet supported in this Google Apps Script.
+That’s because you are likely a customer of a bank or payment system which is not yet supported in [this Google Apps Script](Code.gs).
 
 And because banks and payment systems change the format of their transaction messages time to time (in general, once in a few years), and when the format changes you would need to fix some parts of the code to adapt to the changes.
 
