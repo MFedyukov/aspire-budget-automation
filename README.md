@@ -75,6 +75,6 @@ And because banks and payment systems change the format of their transaction mes
 ### Working with automated process
 
 1. Open your Transactions tab time to time and check the transactions added automatically (automatically added transactions will have no icon in “Cleared” column)
-2. Reassign categories if needed (e.g., you may change “Groceries” to “Gifts” if this time you have bought candies for a birthday).
-3. in “Cleared” column put ✅ for these new transactions
+2. Reassign categories if needed (e.g., you may change “Groceries” to “Gifts” if this time you have bought candies for a birthday)
+3. In “Cleared” column put ✅ for these new transactions
 4. Enjoy your time and clear mind you have freed from manual work, while still having full control of your budget.
