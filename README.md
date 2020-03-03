@@ -65,6 +65,12 @@ And because banks and payment systems change the format of their transaction mes
    - *Keywords & Categories* tab is needed for collecting your statistics of categories for every keyword
 9. As soon as you have received a number of messages of different transactions (different types of inflow and outflow ones) check [Code.gs](Code.gs) and see what code to use as a basis for your bank / payment system messages parsing
 10. Roll up your sleeves and adapt the code
+11. In the end in Google Apps Script editor click Edit menu > Current project's triggers > Add trigger
+    - Choose which function to run: process
+    - Select event source: Time-driven
+    - Select type of time based trigger: Minutes timer
+    - Select minute interval: Every 10 minutes
+    - Failure notification settings: Notify me daily
 
 ### Working with automated process
 
