@@ -22,6 +22,42 @@
 
 var availableToBudget = "Available to budget";
 var accountTransfer = "↕️ Account Transfer";
+
+var timestampArrayColumn = 0;
+var dateArrayColumn = 1;
+var outflowArrayColumn = 2;
+var inflowArrayColumn = 3;
+var categoryArrayColumn = 4;
+var accountArrayColumn = 5;
+var memoArrayColumn = 6;
+var statusArrayColumn = 7;
+var commentArrayColumn = 8;
+var keywordArrayColumn = 9;
+
+var timestampSheetColumn = timestampArrayColumn + 1;
+var dateSheetColumn = dateArrayColumn + 1;
+var outflowSheetColumn = outflowArrayColumn + 1;
+var inflowSheetColumn = inflowArrayColumn + 1;
+var categorySheetColumn = categoryArrayColumn + 1;
+var accountSheetColumn = accountArrayColumn + 1;
+var memoSheetColumn = memoArrayColumn + 1;
+var statusSheetColumn = statusArrayColumn + 1;
+var commentSheetColumn = commentArrayColumn + 1;
+var keywordSheetColumn = keywordArrayColumn + 1;
+
+var charCodeA = 'A'.charCodeAt(0);
+
+var timestampSheetColumnLetter = String.fromCharCode(charCodeA + timestampArrayColumn);
+var dateSheetColumnLetter = String.fromCharCode(charCodeA + dateArrayColumn);
+var outflowSheetColumnLetter = String.fromCharCode(charCodeA + outflowArrayColumn);
+var inflowSheetColumnLetter = String.fromCharCode(charCodeA + inflowArrayColumn);
+var categorySheetColumnLetter = String.fromCharCode(charCodeA + categoryArrayColumn);
+var accountSheetColumnLetter = String.fromCharCode(charCodeA + accountArrayColumn);
+var memoSheetColumnLetter = String.fromCharCode(charCodeA + memoArrayColumn);
+var statusSheetColumnLetter = String.fromCharCode(charCodeA + statusArrayColumn);
+var commentSheetColumnLetter = String.fromCharCode(charCodeA + commentArrayColumn);
+var keywordSheetColumnLetter = String.fromCharCode(charCodeA + keywordArrayColumn);
+
 var notificationEmail = "my~email@gmail.com";
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -563,17 +599,17 @@ function addTransaction(transaction) {
   var transactionsSheet = SpreadsheetApp.getActive().getSheetByName("Transactions");
   var transactionsSheetRow = Math.max(transactionsSheet.getLastRow(), 1) + 1;
   transactionsSheet.insertRowAfter(transactionsSheetRow - 1);
-  transactionsSheet.getRange(transactionsSheetRow, 2).setValue(transaction.date);
-  transactionsSheet.getRange(transactionsSheetRow, 3).setValue(transaction.outflow);
-  transactionsSheet.getRange(transactionsSheetRow, 4).setValue(transaction.inflow);
-  transactionsSheet.getRange(transactionsSheetRow, 5).setValue(transaction.category);
-  transactionsSheet.getRange(transactionsSheetRow, 6).setValue(transaction.account);
-  transactionsSheet.getRange(transactionsSheetRow, 7).setValue(transaction.memo);
+  transactionsSheet.getRange(transactionsSheetRow, dateSheetColumn).setValue(transaction.date);
+  transactionsSheet.getRange(transactionsSheetRow, outflowSheetColumn).setValue(transaction.outflow);
+  transactionsSheet.getRange(transactionsSheetRow, inflowSheetColumn).setValue(transaction.inflow);
+  transactionsSheet.getRange(transactionsSheetRow, categorySheetColumn).setValue(transaction.category);
+  transactionsSheet.getRange(transactionsSheetRow, accountSheetColumn).setValue(transaction.account);
+  transactionsSheet.getRange(transactionsSheetRow, memoSheetColumn).setValue(transaction.memo);
   if (typeof transaction.comment !== 'undefined') {
-    transactionsSheet.getRange(transactionsSheetRow, 9).setValue(transaction.comment);
+    transactionsSheet.getRange(transactionsSheetRow, commentSheetColumn).setValue(transaction.comment);
   }
   if (typeof transaction.keyword !== 'undefined') {
-    transactionsSheet.getRange(transactionsSheetRow, 10).setValue(transaction.keyword);
+    transactionsSheet.getRange(transactionsSheetRow, keywordSheetColumn).setValue(transaction.keyword);
   }
   SpreadsheetApp.flush();
   
@@ -1715,11 +1751,6 @@ function batchCategorize() {
   var firstRow = 8;
   var lastRow = Math.max(sheet.getLastRow(), 1) + 1;
 
-  var keywordArrayColumn = 9; // Note: array column numbers start from 0
-  
-  var categorySheetColumn = 4 + 1; // Note: sheet column numbers start from 1
-  var keywordSheetColumn = keywordArrayColumn + 1;
-  
   var keywords = sheet.getRange(1, keywordSheetColumn, lastRow, keywordSheetColumn).getValues();
 
   var category = "";
@@ -1855,40 +1886,31 @@ function getElementByText(element, textToFind) {
 
 function AddSecondRowForAccountTransfer() {
   var spreadsheet = SpreadsheetApp.getActive();
-  //var sheet = spreadsheet.getActiveSheet();
   var sheet = SpreadsheetApp.getActive().getSheetByName("Transactions");
   var activeRanges = sheet.getActiveRangeList().getRanges();
   var lastColumn = sheet.getMaxColumns();
 
-  var outflowArrayColumn = 2; // Note: array column numbers start from 0
-  var inflowArrayColumn = 3;
-  var accountArrayColumn = 5;
-  
-  var categorySheetColumn = 4 + 1; // Note: sheet column numbers start from 1
-  var timestampSheetColumn = 0 + 1;
-
   for (var i = activeRanges.length - 1; i >= 0; i--) {
     var rangeFirstRow = activeRanges[i].getRow();
     var rangeLastRow = rangeFirstRow + activeRanges[i].getNumRows() - 1;
-    
     for (var currentRow = rangeLastRow; currentRow >= rangeFirstRow; currentRow--) {
       if (!sheet.isRowHiddenByFilter(currentRow) && !sheet.isRowHiddenByUser(currentRow)) {
+        // Quick Debug: popup message
+        //spreadsheet.toast("Processing row " + currentRow, Utilities.formatDate(new Date(), SpreadsheetApp.getActive().getSpreadsheetTimeZone(), "yyyy-MM-dd HH:mm:ss"), 3);
         sheet.getRange(currentRow, categorySheetColumn).setValue("↕️ Account Transfer");
         // Save current timestamp as a unique ID that can be used as a value that binds both lines
         sheet.getRange(currentRow, timestampSheetColumn).setValue(Utilities.formatDate(new Date(), SpreadsheetApp.getActive().getSpreadsheetTimeZone(), "yyyy-MM-dd HH:mm:ss"));
         
-        var rangeData = getValuesAndFormulas(sheet.getRange(currentRow, 1, 1, lastColumn));
-        var outflow = rangeData[0][outflowArrayColumn];
-        var inflow = rangeData[0][inflowArrayColumn];
-        rangeData[0][outflowArrayColumn] = inflow;
-        rangeData[0][inflowArrayColumn] = outflow;
+        sheet.insertRowAfter(currentRow);
+        sheet.getRange(currentRow, 1, 1, lastColumn).copyTo(sheet.getRange(currentRow + 1, 1, 1, lastColumn), SpreadsheetApp.CopyPasteType.PASTE_NORMAL);
+
+        var rangeData = getValuesAndFormulas(sheet.getRange(currentRow + 1, 1, 1, lastColumn));
+        // Swap inflow and outflow in the second row
+        sheet.getRange(currentRow + 1, outflowSheetColumn, 1, 1).setValue(rangeData[0][inflowArrayColumn]);
+        sheet.getRange(currentRow + 1, inflowSheetColumn, 1, 1).setValue(rangeData[0][outflowArrayColumn]);
         // Replace "💰 John’s First Bank Account" with "💰 John’s Cash"
         var account = rangeData[0][accountArrayColumn];
-        rangeData[0][accountArrayColumn] = account.slice(0, account.indexOf(" ", 3)) + " Cash";
-        spreadsheet.toast("Processing row " + currentRow, Utilities.formatDate(new Date(), SpreadsheetApp.getActive().getSpreadsheetTimeZone(), "yyyy-MM-dd HH:mm:ss"), 3);
-        
-        sheet.insertRowAfter(currentRow);
-        sheet.getRange(currentRow + 1, 1, 1, lastColumn).setValues(rangeData);
+        sheet.getRange(currentRow + 1, accountSheetColumn, 1, 1).setValue(account.slice(0, account.indexOf(" ", 3)) + " Cash");
       }
     }
   }
@@ -1899,10 +1921,10 @@ function getValuesAndFormulas(range) {
   var rangeData = range.getValues();
   var rangeFormulas = range.getFormulas();
 
-  for (lin in rangeFormulas)
-    for (col in rangeFormulas[lin])
-      if (rangeFormulas[lin][col] != "")
-        rangeData[lin][col] = rangeFormulas[lin][col];
+  for (r in rangeFormulas)
+    for (c in rangeFormulas[r])
+      if (rangeFormulas[r][c] != "")
+        rangeData[r][c] = rangeFormulas[r][c];
 
   return rangeData;
 }
