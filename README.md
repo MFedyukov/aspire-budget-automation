@@ -23,7 +23,7 @@ So, to automate this here is the script. It can be especially useful if you have
 5. Save
 6. In your Aspire Budget Google Sheet click Tools menu > Macros > Import
 7. You’ll see AddSecondRowForAccountTransfer, click Add Function below it, and close this popup window
-8. Tools menu > Macros > Manage macros > type in "1" in the text box after *Ctrl + Alt + Shift +* > Update
+8. Tools menu > Macros > Manage macros > type "1" in the text box after *Ctrl + Alt + Shift +* > Update
 
 ### Using the macros
 
@@ -57,6 +57,42 @@ And because banks and payment systems change the format of their transaction mes
    - to the moment (2020-02-29) you can forward SMS and push notifications on Android devices, but not in iOS
 3. If you choose to use e-mail notifications, set up their forwarding to your Gmail account, the same as you work with Aspire Budget Google Sheet in
 4. If you choose to use SMS notifications, set up their forwarding to your Gmail account as well, with [SMS Backup+](https://play.google.com/store/apps/details?id=com.zegoggles.smssync), for example
+4. If you choose to use push notifications, set up their forwarding to your Google Apps Script, for example, with [Tasker](https://play.google.com/store/apps/details?id=net.dinglisch.android.taskerm&hl=en):
+   - open your Aspire Budget Google Sheet > Tools menu > Script editor;
+   - open Publish menu > Deploy as web app... > Who has access to the app: Anyone, even anonymous > Publish
+   - you will get 'Current web app URL', copy this string to your mobile device
+   - on your mobile device launch Tasker
+     - click +
+     - Event
+     - type "no" in search field and choose Notification
+       - click an icon of Owner Application field
+       - choose the app you want to read norifications of
+       - click back button
+     - click back button again
+     - New Task
+     - ✓
+       - click +
+       - type "htt" in search field and choose HTTP Request
+         - Method: POST
+         - URL: *your web app URL*
+         - Body: {"message": "%evtprm3", "bank": "%evtprm2"}
+         - click back button
+       - if you (likely) want to debug the process first do the following
+         - click +
+         - type "notif" in search field and choose Notify
+         - Title: %evtprm2 %evtprm3
+         - Text: %http_response_code: %http_data
+         - in Actions click +
+           - Label: Show HTML
+           - in Action field click 🔍︎
+           - type "htm" in search field and choose HTML Popup
+             - Code: %http_data %http_headers()
+             - Timeout (Seconds): Never
+             - click back button
+           - click back button
+         - click back button
+     - click back button
+     - ✓
 4. **Note**: Google Apps Script has a [limit of running time](https://developers.google.com/apps-script/guides/services/quotas). That could become a problem when you have lots of messages, so an approach with starring processed messages in Gmail is implemented. So, the script processes every transaction message that is not starred, adds it to Aspire Budget Google Sheet, and makes the message starred afterwards. Therefore, if you star a transaction message in Gmail manually, it won’t be processed by the script. And vice versa, if you unstar a transaction message in Gmail manually, it will be processed one more time, and this transaction will appear in you Aspire Budget Google Sheet twice. So, a general advice is not to star or unstar transaction messages in Gmail manually to avoid that. As starred messages appear in Gmail in Primary tab, you may want to [filter](https://mail.google.com/mail/u/0/?#settings/filters) such messages: *Mark as read, Categorize as Updates*.
 5. Open your Aspire Budget Google Sheet
 6. On Transactions tab add one extra column and name it Comment (this one is quite useful as with automation Memo column is used for bank message, and Comment is to be used for your personal comments)
