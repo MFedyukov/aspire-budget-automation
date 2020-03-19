@@ -313,11 +313,49 @@ function resetTransactionsFormatting() {
 
 function getFullErrorInfo(err) {
   var errInfo = "ERROR:\n"; 
-  for (var prop in err)  {  
+  for (var prop in err) {  
     errInfo += "  property: " + prop + "\n    value: ["+ err[prop] + "]\n"; 
   } 
   errInfo += "  toString(): " + " value: [" + err.toString() + "]"; 
   return errInfo;
+}
+
+function logMessage(logSheet, logSheetRow, data1, data2, data3, data4) {
+  logSheet.insertRowAfter(logSheetRow - 1);
+  logSheet.getRange(logSheetRow, 1).setValue(Utilities.formatDate(new Date(), SpreadsheetApp.getActive().getSpreadsheetTimeZone(), "yyyy-MM-dd HH:mm:ss"));
+  logSheet.getRange(logSheetRow, 2).setValue(data1);
+  logSheet.getRange(logSheetRow, 3).setValue(data2);
+  logSheet.getRange(logSheetRow, 4).setValue(data3);
+  logSheet.getRange(logSheetRow, 5).setValue(data4);
+}
+
+function logMessageStatus(logSheet, logSheetRow, transaction, message) {
+  if (transaction !== null) {
+    if (transaction.hasOwnProperty("error")) {
+      switch (transaction.error) {
+        case "filtered":
+          logSheet.getRange(logSheetRow, 6).setValue("No");
+          logSheet.getRange(logSheetRow, 7).setValue("OK");
+          break;
+        case "unknown format":
+          logSheet.getRange(logSheetRow, 6).setValue("No");
+          logSheet.getRange(logSheetRow, 7).setValue("Not OK");
+          MailApp.sendEmail(notificationEmail, "Transaction message of unknown format has appeared in POST", message);
+          break;
+        default:
+          MailApp.sendEmail(notificationEmail, "Transaction message of unknown format has appeared in POST", message);
+      }
+    } else {
+      if (addTransaction(transaction)) {
+        logSheet.getRange(logSheetRow, 6).setValue("Yes");
+      } else {
+        logSheet.getRange(logSheetRow, 6).setValue("No");
+      }
+      logSheet.getRange(logSheetRow, 7).setValue("OK");
+    }
+  } else {
+    MailApp.sendEmail(notificationEmail, "Transaction message of unknown format has appeared in POST", message);
+  }
 }
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -336,12 +374,9 @@ function doPost(e) {
     // Logging of all incoming requests, for the purposes of quick debugging in case of bank message format changes
     var logSheet = SpreadsheetApp.getActive().getSheetByName("Log");
     var logSheetRow = Math.max(logSheet.getLastRow(), 1) + 1;
-    logSheet.insertRowAfter(logSheetRow - 1);
-    logSheet.getRange(logSheetRow, 1).setValue(Utilities.formatDate(new Date(), SpreadsheetApp.getActive().getSpreadsheetTimeZone(), "yyyy-MM-dd HH:mm:ss"));
-    logSheet.getRange(logSheetRow, 2).setValue(e.queryString);
-    logSheet.getRange(logSheetRow, 3).setValue(e.parameter);
-    logSheet.getRange(logSheetRow, 4).setValue(e.parameters);
-    logSheet.getRange(logSheetRow, 5).setValue(e.postData.contents);
+
+    // Logging of all messages, for the purposes of quick debugging in case of bank message format changes
+    logMessage(logSheet, logSheetRow, e.queryString, e.parameter, e.parameters, e.postData.contents);
     
     // Quick Debug: logging to Debug sheet
     /*var debugSheet = SpreadsheetApp.getActive().getSheetByName("Debug");
@@ -380,33 +415,7 @@ function doPost(e) {
       }
     }
 
-    // Adding transaction
-    if (transaction !== null) {
-      if (transaction.hasOwnProperty("error")) {
-        switch (transaction.error) {
-          case "filtered":
-            logSheet.getRange(logSheetRow, 6).setValue("No");
-            logSheet.getRange(logSheetRow, 7).setValue("OK");
-            break;
-          case "unknown format":
-            logSheet.getRange(logSheetRow, 6).setValue("No");
-            logSheet.getRange(logSheetRow, 7).setValue("Not OK");
-            MailApp.sendEmail(notificationEmail, "Transaction message of unknown format has appeared in POST", messageSubject + "\n" + messageBody);
-            break;
-          default:
-            MailApp.sendEmail(notificationEmail, "Transaction message of unknown format has appeared in POST", messageSubject + "\n" + messageBody);
-        }
-      } else {
-        if (addTransaction(transaction)) {
-          logSheet.getRange(logSheetRow, 6).setValue("Yes");
-        } else {
-          logSheet.getRange(logSheetRow, 6).setValue("No");
-        }
-        logSheet.getRange(logSheetRow, 7).setValue("OK");
-      }
-    } else {
-      MailApp.sendEmail(notificationEmail, "Transaction message of unknown format has appeared in POST", messageSubject + "\n" + messageBody);
-    }
+    logMessageStatus(logSheet, logSheetRow, transaction, e.queryString + "\n" + e.parameter);
 
     SpreadsheetApp.flush();
   } catch (error) {
@@ -436,6 +445,7 @@ function process() {
 function checkGmail() {
   try {
     var logSheet = SpreadsheetApp.getActive().getSheetByName("Log");
+    var logSheetRow = Math.max(logSheet.getLastRow(), 1) + 1;
     
     // Quick Debug: logging to Debug sheet
     /*var debugSheet = SpreadsheetApp.getActive().getSheetByName("Debug");
@@ -506,11 +516,7 @@ function checkGmail() {
           var messageBody = message.getBody();
           
           // Logging of all found emails, for the purposes of quick debugging in case of bank message format changes
-          var logSheetRow = Math.max(logSheet.getLastRow(), 1) + 1;
-          logSheet.insertRowAfter(logSheetRow - 1);
-          logSheet.getRange(logSheetRow, 1).setValue(Utilities.formatDate(new Date(), SpreadsheetApp.getActive().getSpreadsheetTimeZone(), "yyyy-MM-dd HH:mm:ss"));
-          logSheet.getRange(logSheetRow, 2).setValue(messageSubject);
-          logSheet.getRange(logSheetRow, 3).setValue(messageBody.replace(/\n/g, "\\n"));
+          logMessage(logSheet, logSheetRow, messageSubject, messageBody.replace(/\n/g, "\\n"));
           
           if (key == 'PayPal') {
             var transaction = parsePayPalEmail(messageSubject, messageBody, Utilities.formatDate(message.getDate(), SpreadsheetApp.getActive().getSpreadsheetTimeZone(), "dd.MM.yyyy"));
@@ -522,33 +528,8 @@ function checkGmail() {
             var transaction = parseSberbankSMS(messageBody, Utilities.formatDate(message.getDate(), SpreadsheetApp.getActive().getSpreadsheetTimeZone(), "dd.MM.yyyy"));
           }
           
-          // Adding transaction
-          if (transaction !== null) {
-            if (transaction.hasOwnProperty("error")) {
-              switch (transaction.error) {
-                case "filtered":
-                  logSheet.getRange(logSheetRow, 6).setValue("No");
-                  logSheet.getRange(logSheetRow, 7).setValue("OK");
-                  break;
-                case "unknown format":
-                  logSheet.getRange(logSheetRow, 6).setValue("No");
-                  logSheet.getRange(logSheetRow, 7).setValue("Not OK");
-                  MailApp.sendEmail(notificationEmail, "Transaction message of unknown format has appeared", messageSubject + "\n" + messageBody);
-                  break;
-                default:
-                  MailApp.sendEmail(notificationEmail, "Transaction message of unknown format has appeared", messageSubject + "\n" + messageBody);
-              }
-            } else {
-              if (addTransaction(transaction)) {
-                logSheet.getRange(logSheetRow, 6).setValue("Yes");
-              } else {
-                logSheet.getRange(logSheetRow, 6).setValue("No");
-              }
-              logSheet.getRange(logSheetRow, 7).setValue("OK");
-            }
-          } else {
-            MailApp.sendEmail(notificationEmail, "Transaction message of unknown format has appeared", messageSubject + "\n" + messageBody);
-          }
+          logMessageStatus(logSheet, logSheetRow, transaction, messageSubject + "\n" + messageBody);
+          
           GmailApp.starMessage(message);
           message.star().refresh();
           
