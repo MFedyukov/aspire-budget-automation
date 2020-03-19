@@ -20,6 +20,12 @@
  * Global variables
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+var notificationEmail = "my~email@gmail.com";
+var transactionsFolderId = "1SvtZ_TRaNSaCTioNSFoLDeRiD_Z1SvtZ";
+
+var transactionsSheet = SpreadsheetApp.getActive().getSheetByName("Transactions");
+var logSheet = SpreadsheetApp.getActive().getSheetByName("Log");
+
 var availableToBudget = "Available to budget";
 var accountTransfer = "↕️ Account Transfer";
 
@@ -57,8 +63,6 @@ var memoSheetColumnLetter = String.fromCharCode(charCodeA + memoArrayColumn);
 var statusSheetColumnLetter = String.fromCharCode(charCodeA + statusArrayColumn);
 var commentSheetColumnLetter = String.fromCharCode(charCodeA + commentArrayColumn);
 var keywordSheetColumnLetter = String.fromCharCode(charCodeA + keywordArrayColumn);
-
-var notificationEmail = "my~email@gmail.com";
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * Spreadsheet extra menu functionality [original Aspire Budget 2.8 code]
@@ -329,7 +333,7 @@ function logMessage(logSheet, logSheetRow, data1, data2, data3, data4) {
   logSheet.getRange(logSheetRow, 5).setValue(data4);
 }
 
-function logMessageStatus(logSheet, logSheetRow, transaction, message) {
+function addTransactionAndLogStatus(transaction, logSheet, logSheetRow, message) {
   if (transaction !== null) {
     if (transaction.hasOwnProperty("error")) {
       switch (transaction.error) {
@@ -359,6 +363,51 @@ function logMessageStatus(logSheet, logSheetRow, transaction, message) {
 }
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ * Generic transaction adding functionality
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
+function addTransaction(transaction) {
+  // Quick Debug: examples of input variables
+  //var bank = "citibank";
+  //var bank = "sberbank";
+  //var message = "Dear Customer, The following transaction has been charged to credit card number **7001: Amount: 100.00 RUB Point of sale: CITY-LINK.INFO         My Date: 11/04/2019 Available limit: 92,606.18 RUB";
+  //var message = "\r\nDear Customer,\r\n\r\nYou have received a payment to your credit card:\r\nCard number **7001\r\nAmount: 15,000.00 RUB \r\nAvailable limit: 98,635.94 RUB\r\n \r\nAvailable cash limit: 98,635.94 RUB  \r\n\r\nIf you didn\u0432\u0402\u2122t authorize this transaction, please call CitiPhone immediately on +7(495)775-75-75 in Moscow, +7(812)336-75-75 in St. Petersburg or 8(800)700-38-38 elsewhere in Russia.\r\n\r\nInformation on how to dispute a charge to your account is available by visiting the \u0432\u0402\u045aFAQ\u0432\u0402\u045c page under \u0432\u0402\u045aContact Us\u0432\u0402\u045c at www.citibank.ru, or by clicking https://www.citibank.ru/russia/pdf/dispute_leaflet_rus.pdf  (how to dispute a charge to your debit or credit card) and ?         https://www.citibank.ru/russia/info/rus/pdf/disput_form_01-2017.pdf (Transaction Dispute Form).\r\n\r\nLearn more about Citibank Alerting Service on our website at www.citibank.ru.\r\n\r\nSincerely,\r\nAO Citibank\r\n\r\nPLEASE DO NOT REPLY TO THIS MESSAGE.\r\n  \r\nPlease let us know of any changes in your contact details by signing on to Citibank\u0412\u00ae Online and choosing \u0432\u0402\u045aContact Information\u0432\u0402\u045c under \u0432\u0402\u045aMy Profile\u0432\u0402\u045c. \r\nYou can set up Citibank Alerting Service preferences or opt out of receiving alerts by choosing \u0432\u0402\u045aCitibank Alerting Service\u0432\u0402\u045c under \u0432\u0402\u045aProducts & Services\u0432\u0402\u045c.";
+  //var message = 'Перевод 33.03р от АННА АЛЕКСАНДРОВНА М.\n\n\nБаланс MAES5567: 61847.88р\n\n\nСообщение: "Возврат обратно"';
+
+  // Quick Debug: logging with Logger (View menu > Logs / Ctrl+Enter)
+  //Logger.log(dataContents);
+  
+  // Quick Debug: message box
+  //Browser.msgBox(dataContents);
+  
+  // Quick Debug: logging to Debug sheet
+  /*var debugSheet = SpreadsheetApp.getActive().getSheetByName("Debug");
+  var debugSheetRow = Math.max(debugSheet.getLastRow(), 1) + 1;
+  var debugSheetColumn = 1;
+  debugSheet.getRange(debugSheetRow, debugSheetColumn++).setValue(Utilities.formatDate(new Date(), SpreadsheetApp.getActive().getSpreadsheetTimeZone(), "yyyy-MM-dd HH:mm:ss")); SpreadsheetApp.flush();
+  debugSheet.getRange(debugSheetRow, debugSheetColumn++).setValue(parameters); SpreadsheetApp.flush();
+  debugSheet.getRange(debugSheetRow, debugSheetColumn++).setValue(typeof dataContents); SpreadsheetApp.flush();*/
+
+  var transactionsSheetRow = Math.max(transactionsSheet.getLastRow(), 1) + 1;
+  transactionsSheet.insertRowAfter(transactionsSheetRow - 1);
+  transactionsSheet.getRange(transactionsSheetRow, dateSheetColumn).setValue(transaction.date);
+  transactionsSheet.getRange(transactionsSheetRow, outflowSheetColumn).setValue(transaction.outflow);
+  transactionsSheet.getRange(transactionsSheetRow, inflowSheetColumn).setValue(transaction.inflow);
+  transactionsSheet.getRange(transactionsSheetRow, categorySheetColumn).setValue(transaction.category);
+  transactionsSheet.getRange(transactionsSheetRow, accountSheetColumn).setValue(transaction.account);
+  transactionsSheet.getRange(transactionsSheetRow, memoSheetColumn).setValue(transaction.memo);
+  if (typeof transaction.comment !== 'undefined') {
+    transactionsSheet.getRange(transactionsSheetRow, commentSheetColumn).setValue(transaction.comment);
+  }
+  if (typeof transaction.keyword !== 'undefined') {
+    transactionsSheet.getRange(transactionsSheetRow, keywordSheetColumn).setValue(transaction.keyword);
+  }
+  SpreadsheetApp.flush();
+  
+  return true;
+}
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * Functionality of webhook-triggered processing of new messages with transaction info (when external application calls Google Apps Script "Deploy as web app" webhook)
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
@@ -372,7 +421,6 @@ function doGet(e) {
 function doPost(e) {
   try {
     // Logging of all incoming requests, for the purposes of quick debugging in case of bank message format changes
-    var logSheet = SpreadsheetApp.getActive().getSheetByName("Log");
     var logSheetRow = Math.max(logSheet.getLastRow(), 1) + 1;
 
     // Logging of all messages, for the purposes of quick debugging in case of bank message format changes
@@ -415,7 +463,7 @@ function doPost(e) {
       }
     }
 
-    logMessageStatus(logSheet, logSheetRow, transaction, e.queryString + "\n" + e.parameter);
+    addTransactionAndLogStatus(transaction, logSheet, logSheetRow, e.queryString + "\n" + e.parameter);
 
     SpreadsheetApp.flush();
   } catch (error) {
@@ -444,7 +492,6 @@ function process() {
 // EXTRA PERMISSIONS ARE REQUESTED BY THIS FUNCTION. This function calls GmailApp methods, and therefore requests the following permission: "Read, compose, send, and permanently delete all your email from Gmail"
 function checkGmail() {
   try {
-    var logSheet = SpreadsheetApp.getActive().getSheetByName("Log");
     var logSheetRow = Math.max(logSheet.getLastRow(), 1) + 1;
     
     // Quick Debug: logging to Debug sheet
@@ -528,7 +575,7 @@ function checkGmail() {
             var transaction = parseSberbankSMS(messageBody, Utilities.formatDate(message.getDate(), SpreadsheetApp.getActive().getSpreadsheetTimeZone(), "dd.MM.yyyy"));
           }
           
-          logMessageStatus(logSheet, logSheetRow, transaction, messageSubject + "\n" + messageBody);
+          addTransactionAndLogStatus(transaction, logSheet, logSheetRow, messageSubject + "\n" + messageBody);
           
           GmailApp.starMessage(message);
           message.star().refresh();
@@ -549,52 +596,6 @@ function checkGmail() {
     SpreadsheetApp.flush();
     MailApp.sendEmail(notificationEmail, "Transaction message of unknown format has appeared", fullErrorInfo);
   }
-}
-
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- * Generic transaction adding functionality
- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-
-function addTransaction(transaction) {
-  // Quick Debug: examples of input variables
-  //var bank = "citibank";
-  //var bank = "sberbank";
-  //var message = "Dear Customer, The following transaction has been charged to credit card number **7001: Amount: 100.00 RUB Point of sale: CITY-LINK.INFO         My Date: 11/04/2019 Available limit: 92,606.18 RUB";
-  //var message = "\r\nDear Customer,\r\n\r\nYou have received a payment to your credit card:\r\nCard number **7001\r\nAmount: 15,000.00 RUB \r\nAvailable limit: 98,635.94 RUB\r\n \r\nAvailable cash limit: 98,635.94 RUB  \r\n\r\nIf you didn\u0432\u0402\u2122t authorize this transaction, please call CitiPhone immediately on +7(495)775-75-75 in Moscow, +7(812)336-75-75 in St. Petersburg or 8(800)700-38-38 elsewhere in Russia.\r\n\r\nInformation on how to dispute a charge to your account is available by visiting the \u0432\u0402\u045aFAQ\u0432\u0402\u045c page under \u0432\u0402\u045aContact Us\u0432\u0402\u045c at www.citibank.ru, or by clicking https://www.citibank.ru/russia/pdf/dispute_leaflet_rus.pdf  (how to dispute a charge to your debit or credit card) and ?         https://www.citibank.ru/russia/info/rus/pdf/disput_form_01-2017.pdf (Transaction Dispute Form).\r\n\r\nLearn more about Citibank Alerting Service on our website at www.citibank.ru.\r\n\r\nSincerely,\r\nAO Citibank\r\n\r\nPLEASE DO NOT REPLY TO THIS MESSAGE.\r\n  \r\nPlease let us know of any changes in your contact details by signing on to Citibank\u0412\u00ae Online and choosing \u0432\u0402\u045aContact Information\u0432\u0402\u045c under \u0432\u0402\u045aMy Profile\u0432\u0402\u045c. \r\nYou can set up Citibank Alerting Service preferences or opt out of receiving alerts by choosing \u0432\u0402\u045aCitibank Alerting Service\u0432\u0402\u045c under \u0432\u0402\u045aProducts & Services\u0432\u0402\u045c.";
-  //var message = 'Перевод 33.03р от АННА АЛЕКСАНДРОВНА М.\n\n\nБаланс MAES5567: 61847.88р\n\n\nСообщение: "Возврат обратно"';
-
-  // Quick Debug: logging with Logger (View menu > Logs / Ctrl+Enter)
-  //Logger.log(dataContents);
-  
-  // Quick Debug: message box
-  //Browser.msgBox(dataContents);
-  
-  // Quick Debug: logging to Debug sheet
-  /*var debugSheet = SpreadsheetApp.getActive().getSheetByName("Debug");
-  var debugSheetRow = Math.max(debugSheet.getLastRow(), 1) + 1;
-  var debugSheetColumn = 1;
-  debugSheet.getRange(debugSheetRow, debugSheetColumn++).setValue(Utilities.formatDate(new Date(), SpreadsheetApp.getActive().getSpreadsheetTimeZone(), "yyyy-MM-dd HH:mm:ss")); SpreadsheetApp.flush();
-  debugSheet.getRange(debugSheetRow, debugSheetColumn++).setValue(parameters); SpreadsheetApp.flush();
-  debugSheet.getRange(debugSheetRow, debugSheetColumn++).setValue(typeof dataContents); SpreadsheetApp.flush();*/
-
-  var transactionsSheet = SpreadsheetApp.getActive().getSheetByName("Transactions");
-  var transactionsSheetRow = Math.max(transactionsSheet.getLastRow(), 1) + 1;
-  transactionsSheet.insertRowAfter(transactionsSheetRow - 1);
-  transactionsSheet.getRange(transactionsSheetRow, dateSheetColumn).setValue(transaction.date);
-  transactionsSheet.getRange(transactionsSheetRow, outflowSheetColumn).setValue(transaction.outflow);
-  transactionsSheet.getRange(transactionsSheetRow, inflowSheetColumn).setValue(transaction.inflow);
-  transactionsSheet.getRange(transactionsSheetRow, categorySheetColumn).setValue(transaction.category);
-  transactionsSheet.getRange(transactionsSheetRow, accountSheetColumn).setValue(transaction.account);
-  transactionsSheet.getRange(transactionsSheetRow, memoSheetColumn).setValue(transaction.memo);
-  if (typeof transaction.comment !== 'undefined') {
-    transactionsSheet.getRange(transactionsSheetRow, commentSheetColumn).setValue(transaction.comment);
-  }
-  if (typeof transaction.keyword !== 'undefined') {
-    transactionsSheet.getRange(transactionsSheetRow, keywordSheetColumn).setValue(transaction.keyword);
-  }
-  SpreadsheetApp.flush();
-  
-  return true;
 }
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
